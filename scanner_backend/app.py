@@ -9,20 +9,10 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from scanner_backend.settings import Config
-from scanner_backend.manage_alerts_by_email import alerts_by_email_blueprint
 from scanner_backend.api.endpoints import cache, limiter
 from scanner_backend.api.endpoints.topics import ns as topics_namespace
-from scanner_backend.api.endpoints.deputies import ns as deputies_namespace
-from scanner_backend.api.endpoints.parliamentarygroups import ns as parliamentarygroups_namespace
-from scanner_backend.api.endpoints.initiatives import ns as initiatives_namespace
-from scanner_backend.api.endpoints.places import ns as places_namespace
-from scanner_backend.api.endpoints.initiative_types import ns as initiativetypes_namespace
-from scanner_backend.api.endpoints.initiative_status import ns as initiativestatus_namespace
-from scanner_backend.api.endpoints.stats import ns as stats_namespace
 from scanner_backend.api.endpoints.tagger import ns as tagger_namespace
-from scanner_backend.api.endpoints.alerts import ns as alerts_namespace
 from scanner_backend.api.endpoints.scanned import ns as scanned_namespace
-from scanner_backend.api.endpoints.image_proxy import ns as proxy_namespace
 from scanner_backend.api.restplus import api
 
 
@@ -51,20 +41,9 @@ def create_app(config=Config):
 
 def add_namespaces(app):
     namespaces = [topics_namespace,
-                  deputies_namespace,
-                  parliamentarygroups_namespace,
-                  initiatives_namespace,
-                  places_namespace,
-                  initiativetypes_namespace,
-                  initiativestatus_namespace,
-                  stats_namespace,
                   tagger_namespace,
-                  scanned_namespace,
-                  proxy_namespace
+                  scanned_namespace
     ]
-    if Config.USE_ALERTS:
-        namespaces.append(alerts_namespace)
-
     for ns in namespaces:
         if ns.name in env.get('EXCLUDE_NAMESPACES', []):
             continue
@@ -79,8 +58,6 @@ def initialize_app(app):
     api.init_app(blueprint)
     add_namespaces(app)
     app.register_blueprint(blueprint)
-    if Config.USE_ALERTS:
-        app.register_blueprint(alerts_by_email_blueprint)
 
 
 def main():
