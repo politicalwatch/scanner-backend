@@ -4,7 +4,7 @@ import json
 from flask import request, abort
 from flask_restplus import Namespace, Resource, fields
 
-from scanner_backend.api.business import save_scanned, get_scanned, search_verified_scanned
+from scanner_backend.api.business import save_scanned, get_scanned, search_verified_scanned, LinesOfAction
 from scanner_backend.api.endpoints import limiter
 from scanner_backend.api.serializers import scanned_model
 
@@ -37,7 +37,9 @@ class ScannedItem(Resource):
 
     def get(self, id):
         """Returns details of a scanned document."""
-        return get_scanned(id)
+        result = get_scanned(id)
+        LinesOfAction.extract(result[0])
+        return result
 
 @ns.route('/search/<query>')
 @ns.doc(False)

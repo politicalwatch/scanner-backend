@@ -4,6 +4,7 @@ import ast
 import logging
 import time
 import re
+import pygsheets
 
 
 from tipi_data.models.topic import Topic
@@ -68,3 +69,66 @@ def search_verified_scanned(query):
     documents = Scanned.objects.filter(title=re.compile(query, re.IGNORECASE), verified=True)
 
     return ScannedSchema(many=True).dump(documents)
+
+
+''' LINES OF ACTION '''
+
+class GoogleCredentials:
+    def __init__(self):
+        self.google_credentials = pygsheets.authorize(
+            service_account_file='credentials.json'
+        )
+
+class LinesOfAction(GoogleCredentials):
+    targets_blacklist = [
+        '2.3',
+        '3.8',
+        '4.7',
+        '5.5',
+        '15.1',
+        '16.1',
+        '16.3',
+        '16.6'
+    ]
+
+    def extract(results):
+        extractor = LinesOfAction()
+        return extractor.get(results)
+
+    def get(self, results):
+        kb_lines = self.get_kb_lines()
+        sheet = self.google_credentials.open('Linea de accion-TAG')
+        wks = sheet.worksheet('index', 0)
+        data = wks.get_values(grange=pygsheets.GridRange(worksheet=wks, start=None, end=None))
+        lines_by_tag = dict()
+        for d in data[1:]:
+            lines_by_tag[d[1]] = d[0]
+
+        result = results['result']
+        tags = result['tags']
+        if len(tags) != 0:
+            for tag in tags:
+                subtopic = self.extract_subtopic_number(tag['subtopic'])
+                if not self.is_target_in_blackist_for_lines(subtopic):
+                    tag['line'] = kb_lines[subtopic]
+                else:
+                    try:
+                        tag['line'] = lines_by_tag[tag]
+                    except KeyError:
+                        pass
+
+    def extract_subtopic_number(self, subtopic):
+        splitted = subtopic.split(' ', 1)
+        return splitted[0]
+
+    def get_kb_lines(self):
+        wks = self.google_credentials.open('Matriz linea de accion').worksheet('index', 0)
+        data = wks.get_values(grange=pygsheets.GridRange(worksheet=wks, start=None, end=None))
+        kb = dict()
+        for row in data[1:]:
+            if row[0] not in self.targets_blacklist:
+                kb[row[0]] = row[1]
+        return kb
+
+    def is_target_in_blackist_for_lines(self, target):
+        return target in self.targets_blacklist

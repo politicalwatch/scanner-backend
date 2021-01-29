@@ -9,7 +9,7 @@ from flask import request, abort
 from flask_restplus import Namespace, Resource
 
 import tipi_tasks
-from scanner_backend.api.business import get_tags
+from scanner_backend.api.business import get_tags, LinesOfAction
 from scanner_backend.api.endpoints import cache, limiter
 from scanner_backend.api.parsers import parser_tagger
 from scanner_backend.settings import Config
@@ -59,6 +59,8 @@ class TaggerExtractor(Resource):
                         }
             else:
                 result = tipi_tasks.tagger.extract_tags_from_text(text, tags)
+                LinesOfAction.extract(result)
+
             return result
         except Exception as e:
             if hasattr(e, 'code') and hasattr(e, 'description'):
