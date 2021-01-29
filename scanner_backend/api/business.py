@@ -106,16 +106,20 @@ class LinesOfAction(GoogleCredentials):
 
         result = results['result']
         tags = result['tags']
+        courses_of_action = []
         if len(tags) != 0:
             for tag in tags:
                 subtopic = self.extract_subtopic_number(tag['subtopic'])
                 if not self.is_target_in_blackist_for_lines(subtopic):
-                    tag['line'] = kb_lines[subtopic]
+                    tag['course_of_action'] = kb_lines[subtopic]
+                    courses_of_action.append(kb_lines[subtopic])
                 else:
                     try:
-                        tag['line'] = lines_by_tag[tag]
+                        tag['course_of_action'] = lines_by_tag[tag]
+                        courses_of_action.append(lines_by_tag[tag])
                     except KeyError:
                         pass
+        result['courses_of_action'] = list(set(courses_of_action))
 
     def extract_subtopic_number(self, subtopic):
         splitted = subtopic.split(' ', 1)
