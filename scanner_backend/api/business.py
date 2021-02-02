@@ -115,8 +115,8 @@ class LinesOfAction(GoogleCredentials):
                     courses_of_action.append(kb_lines[subtopic])
                 else:
                     try:
-                        tag['course_of_action'] = lines_by_tag[tag]
-                        courses_of_action.append(lines_by_tag[tag])
+                        tag['course_of_action'] = lines_by_tag[tag['tag']]
+                        courses_of_action.append(lines_by_tag[tag['tag']])
                     except KeyError:
                         pass
         result['courses_of_action'] = list(set(courses_of_action))
