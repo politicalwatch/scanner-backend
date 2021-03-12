@@ -12,6 +12,7 @@ from tipi_data.schemas.topic import TopicSchema, TopicExtendedSchema
 from tipi_data.models.scanned import Scanned
 from tipi_data.schemas.scanned import ScannedSchema
 from tipi_data.utils import generate_id
+from .crs_data import CRS_MAPPING
 
 
 
@@ -139,3 +140,10 @@ class LinesOfAction(GoogleCredentials):
 
     def is_target_in_blackist_for_lines(self, target):
         return target in self.targets_blacklist
+
+''' CRS METHODS '''
+
+def get_crs_data(crs):
+    if crs in CRS_MAPPING:
+        return CRS_MAPPING[crs]
+    return ''

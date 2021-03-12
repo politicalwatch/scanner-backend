@@ -13,6 +13,7 @@ from scanner_backend.api.endpoints import cache, limiter
 from scanner_backend.api.endpoints.topics import ns as topics_namespace
 from scanner_backend.api.endpoints.tagger import ns as tagger_namespace
 from scanner_backend.api.endpoints.scanned import ns as scanned_namespace
+from scanner_backend.api.endpoints.crs import ns as crs_namespace
 from scanner_backend.api.restplus import api
 
 
@@ -42,7 +43,8 @@ def create_app(config=Config):
 def add_namespaces(app):
     namespaces = [topics_namespace,
                   tagger_namespace,
-                  scanned_namespace
+                  scanned_namespace,
+                  crs_namespace
     ]
     for ns in namespaces:
         if ns.name in env.get('EXCLUDE_NAMESPACES', []):
