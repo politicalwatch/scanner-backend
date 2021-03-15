@@ -9,6 +9,6 @@ git+https://github.com/politicalwatch/tipi-data.git
 gunicorn==20.0.4
 python-pcre==0.7
 sentry-sdk[flask]==0.14.1
-Six==1.12.0
+Six==1.13.0
 textract==1.6.3
 pygsheets==2.0.4
