@@ -4,7 +4,8 @@ import json
 from flask import request, abort
 from flask_restplus import Namespace, Resource, fields
 
-from scanner_backend.api.business import save_scanned, get_scanned, search_verified_scanned, LinesOfAction
+from scanner_backend.api.business import save_scanned, get_scanned, search_verified_scanned
+from scanner_backend.api.lines_of_action import LinesOfAction
 from scanner_backend.api.endpoints import limiter
 from scanner_backend.api.serializers import scanned_model
 

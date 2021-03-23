@@ -9,7 +9,8 @@ from flask import request, abort
 from flask_restplus import Namespace, Resource
 
 import tipi_tasks
-from scanner_backend.api.business import get_tags, LinesOfAction
+from scanner_backend.api.business import get_tags
+from scanner_backend.api.lines_of_action import LinesOfAction
 from scanner_backend.api.endpoints import cache, limiter
 from scanner_backend.api.parsers import parser_tagger
 from scanner_backend.settings import Config
