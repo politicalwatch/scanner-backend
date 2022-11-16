@@ -1,4 +1,3 @@
-import codecs
 import logging
 
 from flask_restplus import Namespace, Resource
