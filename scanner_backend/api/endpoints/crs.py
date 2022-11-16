@@ -17,5 +17,5 @@ class CrsItem(Resource):
 
     @cache.cached()
     def get(self, id):
-        """Returns tagging task's result"""
+        """Returns SDG and Target for a specific CRS"""
         return get_crs_data(id)
