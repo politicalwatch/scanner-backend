@@ -1,10 +1,7 @@
 from datetime import datetime
-import json
 import ast
-import logging
 import time
 import re
-
 
 from tipi_data.models.topic import Topic
 from tipi_data.schemas.topic import TopicSchema, TopicExtendedSchema
@@ -12,7 +9,6 @@ from tipi_data.models.scanned import Scanned
 from tipi_data.schemas.scanned import ScannedSchema
 from tipi_data.utils import generate_id
 from .crs_data import CRS_MAPPING
-
 
 
 """ TOPICS METHODS """
