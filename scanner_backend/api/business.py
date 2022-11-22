@@ -2,19 +2,27 @@ from datetime import datetime
 import ast
 import time
 import re
+from os import environ as env
 
 from tipi_data.models.topic import Topic
 from tipi_data.schemas.topic import TopicSchema, TopicExtendedSchema
 from tipi_data.models.scanned import Scanned
 from tipi_data.schemas.scanned import ScannedSchema
+from tipi_data.repositories.topics import Topics
+from tipi_data.repositories.tags import Tags
 from tipi_data.utils import generate_id
 from .crs_data import CRS_MAPPING
 
 
+SDG_KB = env.get('SDG_KB')
+
+
 """ TOPICS METHODS """
 
-def get_topics():
-    return TopicSchema(many=True).dump(Topic.objects.natsorted())
+def get_topics(kb=False):
+    if kb:
+        return TopicSchema(many=True).dump(Topics.by_kb_sorted(kb))
+    return TopicSchema(many=True).dump(Topics.get_public())
 
 def get_topic(id):
     return TopicExtendedSchema().dump(Topic.objects.get(id=id))
@@ -23,7 +31,10 @@ def get_topic(id):
 """ TAGGER METHODS """
 
 def get_tags():
-    return Topic.get_tags()
+    return Tags.by_kb(SDG_KB)
+
+def get_crs_tags():
+    return Tags.by_kb('crs')
 
 
 ''' SCANNED METHODS '''

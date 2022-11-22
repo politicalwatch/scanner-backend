@@ -39,4 +39,5 @@ class Config:
     # App
     MAX_CONTENT_LENGTH = eval(env.get('MAX_CONTENT_LENGTH', '20*1024*1024'))
     CACHE_TAGS = env.get('CACHE_TAGS', 'tagging-tags')
+    CACHE_CRS_TAGS = env.get('CACHE_CRS_TAGS', 'tagging-crs-tags')
     TAGGER_MAX_WORDS = int(env.get('TAGGER_MAX_WORDS', '2500'))
