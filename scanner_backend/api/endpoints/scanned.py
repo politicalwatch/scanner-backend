@@ -35,12 +35,19 @@ class ScannedCollection(Resource):
 @ns.param(name='id', description='Identifier', type=str, required=True, location=['path'], help='Invalid identifier')
 @ns.response(404, 'Scanned not found.')
 class ScannedItem(Resource):
-
+    
     def get(self, id):
         """Returns details of a scanned document."""
-        result = get_scanned(id)
-        LinesOfAction.extract(result[0])
-        return result
+        with_lines_of_action = bool(request.args.get('with_lines_of_action', False))
+        
+        try:
+            result = get_scanned(id)
+            if with_lines_of_action:
+                LinesOfAction.extract(results=result[0], is_scanned=True)
+            return result
+        except Exception as e:
+            log.error(e)
+            return {'Error': 'No scanned document found'}, 404
 
 @ns.route('/search/<query>')
 @ns.doc(False)

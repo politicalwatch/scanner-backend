@@ -12,11 +12,11 @@ class LinesOfAction():
         '16.6'
     ]
 
-    def extract(results):
+    def extract(results, is_scanned=False):
         extractor = LinesOfAction()
-        return extractor.get(results)
+        return extractor.get(results, is_scanned)
 
-    def get(self, results):
+    def get(self, results, is_scanned):
         kb_lines = self.get_kb_lines()
         lines_by_tag = dict()
         with open('./data/lines.csv') as csvfile:
@@ -24,7 +24,10 @@ class LinesOfAction():
             for d in csvreader:
                 lines_by_tag[d[1]] = d[0]
 
-        result = results['result']
+        if is_scanned:
+            result = results['result'][0]
+        else:
+            result = results['result']
         tags = result['tags']
         courses_of_action = []
         if len(tags) != 0:
