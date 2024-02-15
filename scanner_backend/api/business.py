@@ -31,7 +31,10 @@ def get_topic(id):
 """ TAGGER METHODS """
 
 def get_tags():
-    return Tags.by_kb(SDG_KB)
+    if SDG_KB:
+        return Tags.by_kb(SDG_KB)
+    else:
+        return Tags.get_all()
 
 def get_crs_tags():
     return Tags.by_kb('crs')
