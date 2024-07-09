@@ -6,7 +6,7 @@ from os.path import splitext
 import tempfile
 
 from flask import request, abort
-from flask_restplus import Namespace, Resource
+from flask_restx import Namespace, Resource
 
 import tipi_tasks
 from scanner_backend.api.business import get_crs_tags
@@ -17,10 +17,13 @@ from scanner_backend.settings import Config
 
 log = logging.getLogger(__name__)
 
-ns = Namespace('tagger-crs', description='Operations related to tag texts using our CRS knowledge base')
+ns = Namespace(
+    "tagger-crs",
+    description="Operations related to tag texts using our CRS knowledge base",
+)
 
 
-@ns.route('/')
+@ns.route("/")
 @ns.expect(parser_tagger)
 class CrsTagger(Resource):
 
@@ -31,46 +34,60 @@ class CrsTagger(Resource):
             tags = cache.get(cache_key)
             if tags is None:
                 tags = get_crs_tags()
-                cache.set(cache_key, tags, timeout=5*60)
+                cache.set(cache_key, tags, timeout=5 * 60)
             tags = codecs.encode(pickle.dumps(tags), "base64").decode()
             tipi_tasks.init()
-            text = ''
-            if 'text' in request.form and request.form['text']:
-                text = request.form['text']
+            text = ""
+            if "text" in request.form and request.form["text"]:
+                text = request.form["text"]
             else:
-                if 'file' in request.files:
-                    file_input = request.files['file']
-                    with tempfile.NamedTemporaryFile(prefix='tipiscanner_', suffix=splitext(file_input.filename)[1]) as f:
+                if "file" in request.files:
+                    file_input = request.files["file"]
+                    with tempfile.NamedTemporaryFile(
+                        prefix="tipiscanner_", suffix=splitext(file_input.filename)[1]
+                    ) as f:
                         f.write(file_input.stream.read())
-                        text = process(f.name).decode('utf-8').strip()
+                        text = process(f.name).decode("utf-8").strip()
                         f.close()
                     if not text:
-                        abort(400, "Error al obtener el texto del fichero proporcionado. Pruebe con otro fichero.")
+                        abort(
+                            400,
+                            "Error al obtener el texto del fichero proporcionado. Pruebe con otro fichero.",
+                        )
             text_length = len(text.split())
 
             if text_length >= Config.TAGGER_MAX_WORDS:
-                task = tipi_tasks.tagger.extract_tags_from_text.apply_async((text, tags))
+                task = tipi_tasks.tagger.extract_tags_from_text.apply_async(
+                    (text, tags)
+                )
                 eta_time = int((text_length / 1000) * 4)
                 task_id = task.id
                 result = {
-                        'status': 'PROCESSING',
-                        'task_id': task_id,
-                        'estimated_time': eta_time
-                        }
+                    "status": "PROCESSING",
+                    "task_id": task_id,
+                    "estimated_time": eta_time,
+                }
             else:
                 result = tipi_tasks.tagger.extract_tags_from_text(text, tags)
 
             return result
         except Exception as e:
-            if hasattr(e, 'code') and hasattr(e, 'description'):
+            if hasattr(e, "code") and hasattr(e, "description"):
                 abort(e.code, e.description)
             else:
                 abort(500, "Internal server error")
 
 
-@ns.route('/result/<id>')
-@ns.param(name='id', description='Task id', type=str, required=True, location=['path'], help='Invalid identifier')
-@ns.response(404, 'Task not found.')
+@ns.route("/result/<id>")
+@ns.param(
+    name="id",
+    description="Task id",
+    type=str,
+    required=True,
+    location=["path"],
+    help="Invalid identifier",
+)
+@ns.response(404, "Task not found.")
 class CrsTaggerResult(Resource):
 
     def get(self, id):

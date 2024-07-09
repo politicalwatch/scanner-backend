@@ -1,7 +1,7 @@
 import logging
 
 from flask import request
-from flask_restplus import Namespace, Resource
+from flask_restx import Namespace, Resource
 
 from scanner_backend.api.business import get_topics, get_topic
 from scanner_backend.api.endpoints import cache
@@ -9,10 +9,10 @@ from scanner_backend.api.endpoints import cache
 
 log = logging.getLogger(__name__)
 
-ns = Namespace('topics', description='Operations related to topics')
+ns = Namespace("topics", description="Operations related to topics")
 
 
-@ns.route('/')
+@ns.route("/")
 class TopicsCollection(Resource):
 
     @cache.cached()
@@ -21,9 +21,16 @@ class TopicsCollection(Resource):
         return get_topics()
 
 
-@ns.route('/<id>')
-@ns.param(name='id', description='Identifier', type=str, required=True, location=['path'], help='Invalid identifier')
-@ns.response(404, 'Topic not found.')
+@ns.route("/<id>")
+@ns.param(
+    name="id",
+    description="Identifier",
+    type=str,
+    required=True,
+    location=["path"],
+    help="Invalid identifier",
+)
+@ns.response(404, "Topic not found.")
 class TopicItem(Resource):
 
     def get(self, id):

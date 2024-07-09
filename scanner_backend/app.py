@@ -19,37 +19,41 @@ from scanner_backend.api.restplus import api
 
 
 def add_sentry():
-    SENTRY_DSN = env.get('SENTRY_DSN', None)
+    SENTRY_DSN = env.get("SENTRY_DSN", None)
     if SENTRY_DSN:
-        sentry_sdk.init(
-            dsn=SENTRY_DSN,
-            integrations=[FlaskIntegration()]
-        )
+        sentry_sdk.init(dsn=SENTRY_DSN, integrations=[FlaskIntegration()])
 
 
 def create_app(config=Config):
     add_sentry()
     app = Flask(__name__)
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
     app.config.from_object(config)
     initialize_app(app)
 
-    logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../logging.conf'))
+    logging_conf_path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "../logging.conf")
+    )
     logging.config.fileConfig(logging_conf_path)
     log = logging.getLogger(__name__)
-    log.info('>>>>> Starting development server at http://{}/ <<<<<'.format(app.config['SERVER_NAME']))
+    log.info(
+        ">>>>> Starting development server at http://{}/ <<<<<".format(
+            app.config["SERVER_NAME"]
+        )
+    )
     return app
 
 
 def add_namespaces(app):
-    namespaces = [topics_namespace,
-                  tagger_namespace,
-                  scanned_namespace,
-                  crs_tagger_namespace,
-                  crs_namespace
+    namespaces = [
+        topics_namespace,
+        tagger_namespace,
+        scanned_namespace,
+        crs_tagger_namespace,
+        crs_namespace,
     ]
     for ns in namespaces:
-        if ns.name in env.get('EXCLUDE_NAMESPACES', []):
+        if ns.name in env.get("EXCLUDE_NAMESPACES", []):
             continue
         api.add_namespace(ns)
 
@@ -57,7 +61,7 @@ def add_namespaces(app):
 def initialize_app(app):
     cache.init_app(app, config=Config.CACHE)
     limiter.init_app(app)
-    blueprint = Blueprint('api', __name__)
+    blueprint = Blueprint("api", __name__)
     CORS(blueprint)
     api.init_app(blueprint)
     add_namespaces(app)
@@ -67,9 +71,7 @@ def initialize_app(app):
 def main():
     app = create_app(Config)
     app.run(
-        host=app.config['IP'],
-        port=app.config['PORT'],
-        debug=app.config['FLASK_DEBUG']
+        host=app.config["IP"], port=app.config["PORT"], debug=app.config["FLASK_DEBUG"]
     )
 
 
