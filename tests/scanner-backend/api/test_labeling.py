@@ -1,6 +1,6 @@
 import itertools
 import json
-import pcre
+import regex
 import pytest
 import unittest
 import sys
@@ -27,15 +27,18 @@ for topic in topics:
                     'topic': topic['name'],
                     'subtopic': tag['subtopic'],
                     'tag': tag['tag'],
-                    'compiletag': pcre.compile('(?i)' + delimiter.join(permutation))
+                    'compiletag': regex.compile('(?i)' + delimiter.join(permutation))
                 })
         else:
-            TAGS.append({
-                'topic': topic['name'],
-                'subtopic': tag['subtopic'],
-                'tag': tag['tag'],
-                'compiletag': pcre.compile('(?i)' + tag['regex'])
-            })
+            try:
+                TAGS.append({
+                    'topic': topic['name'],
+                    'subtopic': tag['subtopic'],
+                    'tag': tag['tag'],
+                    'compiletag': regex.compile('(?i)' + tag['regex'])
+                })
+            except regex.error as e:
+                print(e, tag['regex'])
 
 # initialize app
 Config.TESTING = True

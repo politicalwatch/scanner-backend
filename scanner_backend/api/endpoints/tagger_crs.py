@@ -1,7 +1,10 @@
 import codecs
 import logging
 import pickle
-from textract import process
+import subprocess
+from pdfminer.high_level import extract_text as extract_pdf_text
+from docx import Document
+from pptx import Presentation
 from os.path import splitext
 import tempfile
 
@@ -47,7 +50,49 @@ class CrsTagger(Resource):
                         prefix="tipiscanner_", suffix=splitext(file_input.filename)[1]
                     ) as f:
                         f.write(file_input.stream.read())
-                        text = process(f.name).decode("utf-8").strip()
+                        f.seek(0)
+                        print("MIMETYPE:", file_input.mimetype)
+                        if file_input.mimetype == "text/plain":
+                            text = f.read().decode("utf-8").strip()
+                        elif file_input.mimetype == "application/pdf":
+                            text = extract_pdf_text(f.name).strip()
+                        elif (
+                            file_input.mimetype
+                            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        ):
+                            doc = Document(f)
+                            text = "\n".join(
+                                [para.text for para in doc.paragraphs]
+                            ).strip()
+                        elif file_input.mimetype == "application/msword":
+                            result = subprocess.run(
+                                ["antiword", f.name],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                            )
+                            if result.returncode != 0:
+                                raise Exception(
+                                    f"Error al leer el archivo .doc: {result.stderr.decode('utf-8')}"
+                                )
+                            text = result.stdout.decode("utf-8").strip()
+                        elif (
+                            file_input.mimetype
+                            == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                        ):
+                            ppt = Presentation(f)
+                            text = "\n".join(
+                                [
+                                    shape.text
+                                    for slide in ppt.slides
+                                    for shape in slide.shapes
+                                    if hasattr(shape, "text")
+                                ]
+                            ).strip()
+                        else:
+                            abort(
+                                400,
+                                "Formato no soportado. Por favor, utilice un archivo .txt, .pdf, .docx, .doc o .pptx.",
+                            )
                         f.close()
                     if not text:
                         abort(
